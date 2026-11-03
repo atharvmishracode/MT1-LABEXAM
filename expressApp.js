@@ -22,8 +22,9 @@ function isNonEmptyString(value) {
 function hasRequiredTaskFields(task) {
   return (
     task &&
+    task.id !== null && task.id !== undefined && task.id !== '' &&
+    typeof task.id !== 'boolean' &&
     Number.isInteger(Number(task.id)) &&
-    String(task.id).trim() !== '' &&
     isNonEmptyString(task.taskName) &&
     isNonEmptyString(task.assignedTo) &&
     isNonEmptyString(task.status)
