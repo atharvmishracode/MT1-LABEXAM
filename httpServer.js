@@ -32,16 +32,19 @@ function readJsonBody(req) {
     const maxBodySize = 1024 * 1024;
 
     req.on('data', (chunk) => {
+      if (tooLarge) return;
       body += chunk;
       if (Buffer.byteLength(body, 'utf8') > maxBodySize) {
         tooLarge = true;
-        reject(Object.assign(new Error('Request body is too large.'), { statusCode: 413 }));
-        req.destroy();
+        body = '';
       }
     });
 
     req.on('end', () => {
-      if (tooLarge) return;
+      if (tooLarge) {
+        reject(Object.assign(new Error('Request body is too large.'), { statusCode: 413 }));
+        return;
+      }
       if (!body.trim()) {
         reject(Object.assign(new Error('Request body is required.'), { statusCode: 400 }));
         return;
@@ -60,8 +63,9 @@ function readJsonBody(req) {
 function hasRequiredTaskFields(task) {
   return (
     task &&
+    task.id !== null && task.id !== undefined && task.id !== '' &&
+    typeof task.id !== 'boolean' &&
     Number.isInteger(Number(task.id)) &&
-    String(task.id).trim() !== '' &&
     typeof task.taskName === 'string' && task.taskName.trim() !== '' &&
     typeof task.assignedTo === 'string' && task.assignedTo.trim() !== '' &&
     typeof task.status === 'string' && task.status.trim() !== ''
